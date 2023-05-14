@@ -1,0 +1,5 @@
+---
+# defaults file for lighthouse-role
+git_version_hash: "d701335"
+document_root: /var/www/html
+app_root: lighthouse

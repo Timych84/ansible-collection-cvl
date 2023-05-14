@@ -1,0 +1,72 @@
+- name: Install lighthouse | Set Nginx user
+  ansible.builtin.set_fact:
+    nginx_user: "nginx"
+- name: Install lighthouse | Install epel repo
+  ansible.builtin.yum:
+    name:
+      - epel-release
+  ignore_errors: "{{ ansible_check_mode }}"
+- name: Install lighthouse | Install nginx, git, rsync and firewalld
+  ansible.builtin.yum:
+    name:
+      - git
+      - nginx
+      - firewalld
+      - rsync
+    state: present
+    update_cache: true
+  notify:
+    - Restart nginx service
+    - Restart firewalld service
+- name: Install lighthouse | Flush handlers
+  ansible.builtin.meta: flush_handlers
+- name: Install lighthouse | Clone a lighthouse repo
+  ansible.builtin.git:
+    repo: "{{ lighthouse_repo_url }}"
+    dest: "{{ document_root }}/lighthouse_repo"
+    version: "{{ git_version_hash }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+- name: Install lighthouse | Copy lighthouse to site folder
+  ansible.posix.synchronize:
+    src: "{{ document_root }}/lighthouse_repo/"
+    dest: "{{ document_root }}/{{ app_root }}"
+    perms: false
+    recursive: true
+    rsync_opts:
+      - "--exclude=.git"
+      - "--chown=nginx:nginx"
+      - "--chmod=D750,F640"
+  ignore_errors: "{{ ansible_check_mode }}"
+  delegate_to: "{{ inventory_hostname }}"
+- name: Install lighthouse | Test whether SELinux is enabled
+  ansible.builtin.command: /usr/sbin/selinuxenabled
+  ignore_errors: yes
+  register: selinux_status
+  changed_when: false
+- name: Install lighthouse | Configure SELinux for nginx
+  ansible.builtin.command: "chcon -R -t httpd_sys_content_t {{ document_root }}/{{ app_root }}"
+  register: chcon_nginx
+  changed_when: chcon_nginx.rc != 0
+  when: selinux_status.rc == 0
+- name: Install lighthouse | Open http/s port on firewalld
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop:
+    - http
+    - https
+  ignore_errors: "{{ ansible_check_mode }}"
+- name: Install lighthouse | Rewrite nginx main config file
+  ansible.builtin.template:
+    src: "templates/nginx.conf.j2"
+    dest: "{{ nginx_config_file }}"
+    mode: 0644
+  notify: Reload nginx service
+- name: Install lighthouse | Rewrite nginx lighthouse config file
+  ansible.builtin.template:
+    src: "templates/lighthouse.conf.j2"
+    dest: "{{ lighthouse_nginx_config_file }}"
+    mode: 0644
+  notify: Reload nginx service

@@ -1,0 +1,9 @@
+---
+# handlers file for vector-role
+- name: Restart vector service
+  become: true
+  ansible.builtin.service:
+    name: vector
+    state: restarted
+    enabled: true
+  ignore_errors: "{{ ansible_check_mode }}"

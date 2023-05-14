@@ -1,0 +1,16 @@
+server {
+    listen      80;
+    listen      [::]:80;
+    server_name _;
+    root        {{ document_root }}/{{ app_root }};
+
+    # logging
+    access_log  /var/log/nginx/access.log combined buffer=512k flush=1m;
+    error_log   /var/log/nginx/error.log warn;
+
+    # index.html fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+}

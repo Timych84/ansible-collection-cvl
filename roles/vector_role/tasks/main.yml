@@ -1,0 +1,39 @@
+---
+- name: Install vector | Include pkg_mgr tasks
+  ansible.builtin.include_tasks:
+      file: "{{ lookup('first_found', params) }}"
+      apply:
+        tags: [install]
+  vars:
+    params:
+      files:
+        - "install/{{ ansible_pkg_mgr }}.yml"
+        - 'empty.yml'
+- name: Install vector | Delete default vector config
+  become: true
+  ansible.builtin.file:
+    path: /etc/vector/vector.toml
+    state: absent
+- name: Install vector | Set default vector config file for service
+  become: true
+  ansible.builtin.template:
+    src: "templates/vector.j2"
+    dest: "{{ vector_default_config_file }}"
+    mode: 0644
+  notify: Restart vector service
+- name: Install vector | Vector config from template
+  become: true
+  ansible.builtin.template:
+    src: "templates/vector.yml.j2"
+    dest: "/etc/vector/vector.yml"
+    mode: 0644
+  notify: Restart vector service
+- name: Install vector | Flush handlers
+  ansible.builtin.meta: flush_handlers
+- name: Install vector | Check if vector started
+  ansible.builtin.service_facts:
+  register: temp__service_facts
+  until: temp__service_facts.ansible_facts.services["vector.service"].state == 'running'
+  retries: 20
+  delay: 2
+  ignore_errors: "{{ ansible_check_mode }}"

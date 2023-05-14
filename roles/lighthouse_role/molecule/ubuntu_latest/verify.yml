@@ -1,0 +1,21 @@
+---
+# This is an example playbook to execute Ansible tests.
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Verify lighthouse | Check if vector started
+      ansible.builtin.service_facts:
+      register: temp__service_facts
+    - name: Example assertion
+      ansible.builtin.assert:
+        that:
+          - temp__service_facts.ansible_facts.services["nginx.service"].state == 'running'
+    - name: Verify lighthouse | Validate lighthouse nginx config
+      ansible.builtin.command: "nginx -t"
+      changed_when: false
+      register: nginx_rc
+    - name: 'Assert lighthouse validate'
+      ansible.builtin.assert:
+        that:
+          - nginx_rc.rc == 0

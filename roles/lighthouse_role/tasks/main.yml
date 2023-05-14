@@ -1,0 +1,13 @@
+---
+# tasks file for lighthouse-role
+- name: Install Lighthouse | Include pkg_mgr tasks
+  ansible.builtin.include_tasks:
+      file: "{{ lookup('first_found', params) }}"
+      apply:
+        tags: [install]
+  vars:
+    params:
+      files:
+        - "install/{{ ansible_pkg_mgr }}.yml"
+        - 'empty.yml'
+  ignore_errors: "{{ ansible_check_mode }}"

@@ -1,0 +1,47 @@
+- name: Install lighthouse | Set Nginx user
+  ansible.builtin.set_fact:
+    nginx_user: "www-data"
+- name: Install lighthouse | Install nginx, git, rsync and firewalld
+  become: true
+  ansible.builtin.apt:
+    name:
+      - git
+      - nginx
+      - firewalld
+      - rsync
+  notify:
+    - Restart nginx service
+    - Restart firewalld service
+  ignore_errors: "{{ ansible_check_mode }}"
+- name: Install lighthouse | Flush handlers
+  ansible.builtin.meta: flush_handlers
+- name: Install lighthouse | Clone a lighthouse repo
+  ansible.builtin.git:
+    repo: "{{ lighthouse_repo_url }}"
+    dest: "{{ document_root }}/lighthouse_repo"
+    version: "{{ git_version_hash }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+- name: Install lighthouse | Copy lighthouse to site folder
+  ansible.posix.synchronize:
+    src: "{{ document_root }}/lighthouse_repo/"
+    dest: "{{ document_root }}/{{ app_root }}"
+    perms: false
+    recursive: true
+    rsync_opts:
+      - "--exclude=.git"
+      - "--chown={{ nginx_user }}:{{ nginx_user }}"
+      - "--chmod=D750,F640"
+  ignore_errors: "{{ ansible_check_mode }}"
+  delegate_to: "{{ inventory_hostname }}"
+- name: Install lighthouse | Rewrite nginx main config file
+  ansible.builtin.template:
+    src: "templates/nginx.conf.j2"
+    dest: "{{ nginx_config_file }}"
+    mode: 0644
+  notify: Reload nginx service
+- name: Install lighthouse | Rewrite nginx lighthouse config file
+  ansible.builtin.template:
+    src: "templates/lighthouse.conf.j2"
+    dest: "{{ lighthouse_nginx_config_file }}"
+    mode: 0644
+  notify: Reload nginx service

@@ -1,0 +1,20 @@
+---
+# handlers file for lighthouse-role
+- name: Restart nginx service
+  become: true
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  ignore_errors: "{{ ansible_check_mode }}"
+- name: Reload nginx service
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+  ignore_errors: "{{ ansible_check_mode }}"
+- name: Restart firewalld service
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: true
+  ignore_errors: "{{ ansible_check_mode }}"

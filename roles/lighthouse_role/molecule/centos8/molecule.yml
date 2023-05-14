@@ -1,0 +1,35 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  yamllint .
+  ansible-lint
+  flake8
+platforms:
+  - name: centos8
+    image: centos:8
+    dockerfile: ../resources/Dockerfile.j2
+    # pre_build_image: true
+    command: /sbin/init
+    capabilities:
+      - SYS_ADMIN
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    env:
+      ANSIBLE_USER: ansible
+      SUDO_GROUP: wheel
+      DEPLOY_GROUP: deployer
+      container: docker
+      OSTYPE: CENTOS8
+    privileged: True
+provisioner:
+  name: ansible
+  inventory:
+    links:
+      hosts: ../resources/inventory/hosts.yml
+      group_vars: ../resources/inventory/group_vars/
+      host_vars: ../resources/inventory/host_vars/
+verifier:
+  name: ansible

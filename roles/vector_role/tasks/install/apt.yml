@@ -1,0 +1,11 @@
+- name: Install vector | Download vector deb distrib
+  ansible.builtin.get_url:
+    url: "https://packages.timber.io/vector/{{ vector_version }}/vector_{{ vector_version }}-1_amd64.deb"
+    dest: "./vector_{{ vector_version }}.deb"
+    mode: 0644
+- name: Install vector | Install vector deb package
+  become: true
+  ansible.builtin.apt:
+    deb: vector_{{ vector_version }}.deb
+  notify: Restart vector service
+  ignore_errors: "{{ ansible_check_mode }}"

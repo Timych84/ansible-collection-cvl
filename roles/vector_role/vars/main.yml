@@ -1,0 +1,4 @@
+---
+# vars file for vector-role
+vector_default_config_file: /etc/default/vector
+vector_config_file: /etc/vector/vector.yml
