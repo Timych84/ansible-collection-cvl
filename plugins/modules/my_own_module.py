@@ -7,66 +7,74 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: my_test
+module: my_own_module
 
-short_description: This is my test module
+short_description: Module for writing content to file
 
 # If this is part of a collection, you need to use semantic versioning,
 # i.e. the version is of the form "2.5.0" and not "2.4".
 version_added: "1.0.0"
 
-description: This is my longer description explaining my test module.
+description:  Module for writing content to file
 
 options:
-    name:
-        description: This is the message to send to the test module.
-        required: true
-        type: str
-    new:
+    path:
         description:
-            - Control to demo if the result of this module is changed or not.
-            - Parameter description can be a list as well.
-        required: false
+        - Remote absolute path of file to write content.
+        type: path
+        required: yes
+    content:
+        description:
+        - Content to write to file.
+        type: str
+        required: yes
+    force:
+        description:
+        - Influence whether the remote file must always be replaced.
+        - If C(true), the remote file will be replaced when contents are different than the source.
+        - If C(false), the content will be written only if the destination does not exist.
         type: bool
+        default: false
 # Specify this value according to your collection
 # in format of namespace.collection.doc_fragment_name
-extends_documentation_fragment:
-    - my_namespace.my_collection.my_doc_fragment_name
+# extends_documentation_fragment:
+#     - my_namespace.my_collection.my_doc_fragment_name
 
 author:
-    - Your Name (@yourGitHubHandle)
+    - Timur Alekseev (@Timych84)
 '''
 
 EXAMPLES = r'''
-# Pass in a message
-- name: Test with a message
-  my_namespace.my_collection.my_test:
-    name: hello world
-
-# pass in a message and have changed true
-- name: Test with a message and changed output
-  my_namespace.my_collection.my_test:
-    name: hello world
-    new: true
-
-# fail the module
-- name: Test failure of the module
-  my_namespace.my_collection.my_test:
-    name: fail me
+# Write some content into remote file if remote file not exists
+- name: Write some content
+  timych.yandex_cloud_cvl.my_own_module:
+    path: "/home/user/myfile.txt"
+    content: "my new content"
+# Write some content into remote file even if file exists and have different content
+- name: Write some content
+  timych.yandex_cloud_cvl.my_own_module:
+    path: "/home/user/myfile.txt"
+    content: "my new content"
+    force: true
 '''
 
 RETURN = r'''
 # These are examples of possible return values, and in general should use other names for return values.
-original_message:
-    description: The original name param that was passed in.
+file_exists:
+    description: File exists on target sytem
+    type: bool
+    returned: always
+    sample: true
+same_content:
+    description: File have same content on target system
+    type: bool
+    returned: always
+    sample: true
+target_content:
+    description: Content shoud be written to target
     type: str
     returned: always
-    sample: 'hello world'
-message:
-    description: The output message that the test module generates.
-    type: str
-    returned: always
-    sample: 'goodbye'
+    sample: 'test content'
 '''
 import os
 # import hashlib
@@ -79,7 +87,7 @@ def run_module():
     module_args = dict(
         path=dict(type='str', required=True),
         content=dict(type='str', required=True),
-        force=dict(type='bool', required=False, default=False)
+        force=dict(type='bool', default=False)
     )
 
     # seed the result dict in the object
@@ -99,7 +107,6 @@ def run_module():
         argument_spec=module_args,
         supports_check_mode=True
     )
-
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
     # state with no modifications
@@ -110,15 +117,21 @@ def run_module():
     # part where your module will do what it needs to do)
     # use whatever logic you need to determine whether or not this module
     # made any modifications to your target
-
+    result['file_exists'] = os.path.exists(module.params['path'])
+    result['target_content'] = module.params['content']
     # If file exists and force not true check that content in query and in file same
-    if os.path.exists(module.params['path']) and not module.params['force']:
+    if (os.path.exists(module.params['path']) and module.params['force'] is False):
         # Usinig read all content from file and compare with content on query
         try:
             with open(module.params['path'], 'r') as file:
                 file_content = file.read()
                 if file_content == module.params['content']:
                     result['changed'] = False
+                    result['same_content'] = True
+                    module.exit_json(**result)
+                else:
+                    result['changed'] = False
+                    result['same_content'] = False
                     module.exit_json(**result)
         except Exception as e:
             module.fail_json(msg='Error reading existing file: %s' % e, **result)
@@ -140,7 +153,6 @@ def run_module():
     if not os.path.exists(dir):
         try:
             os.makedirs(dir)
-            result['changed'] = True
         except Exception as e:
             module.fail_json(msg='Error creating directory: %s' % e, **result)
 
@@ -149,17 +161,12 @@ def run_module():
         with open(module.params['path'], 'w') as file:
             try:
                 file.write(module.params['content'])
+                result['same_content'] = False
                 result['changed'] = True
             except Exception as e:
                 module.fail_json(msg='Error writing file: %s' % e, **result)
     except Exception as e:
         module.fail_json(msg='Error opening file: %s' % e, **result)
-
-    # during the execution of the module, if there is an exception or a
-    # conditional state that effectively causes a failure, run
-    # AnsibleModule.fail_json() to pass in the message and the result
-    # if module.params['name'] == 'fail me':
-    #     module.fail_json(msg='You requested this to fail', **result)
 
     # in the event of a successful module execution, you will want to
     # simple AnsibleModule.exit_json(), passing the key/value results

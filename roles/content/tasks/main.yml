@@ -3,6 +3,7 @@
   timych.yandex_cloud_cvl.my_own_module:
     path: "{{ path }}"
     content: "{{ content }}"
+    force: "{{ force }}"
   register: testout
 - name: dump test output
   debug:
