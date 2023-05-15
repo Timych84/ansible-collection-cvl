@@ -1,0 +1,115 @@
+- name: Create instances
+  hosts: control
+  tags: crate_instances
+  vars:
+    instances:
+      - name: 'clickhouse-01'
+        description: 'clickhouse'
+        memory: 2
+        cores: 2
+        core_fraction: 20
+      - name: 'vector-01'
+        description: 'vector'
+        memory: 2
+        cores: 2
+        core_fraction: 20
+      - name: 'lighthouse-01'
+        description: 'lighthouse'
+        memory: 2
+        cores: 2
+        core_fraction: 20
+  tasks:
+    - name: Run the YC module
+      timych.yandex_cloud_cvl.yc:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        ssh_key: "~/.ssh/id_rsa.pub"
+        state: present
+        update: true
+        zone: ru-central1-a
+        hostname: "{{ item.name }}"
+        memory: "{{ item.memory }}"
+        cores: "{{ item.cores }}"
+        core_fraction: "{{ item.core_fraction }}"
+        public_ip: true
+        preemptible: true
+        boot_disk:
+          image_family: centos-stream-8
+          image_folder_id: standard-images
+          size: 10
+          type: network-hdd
+      register: instace_result
+      when: "item.name not in groups[item.description]"
+      loop: "{{ instances }}"
+    - name: Add hosts to in memory inventory
+      ansible.builtin.add_host:
+        name: '{{ item.vm.name }}'
+        groups:
+          - '{{ item.vm.description }}'
+          - in_memory
+        ansible_host: '{{ item.vm.network_interfaces[0].primary_v4_address.one_to_one_nat.address }}'
+        host_description: '{{ item.vm.description }}'
+      when: item.changed
+      loop: "{{ instace_result.results }}"
+    - name: Wait for ssh connect
+      ansible.builtin.wait_for:
+        port: 22
+        host: '{{ item.vm.network_interfaces[0].primary_v4_address.one_to_one_nat.address }}'
+        delay: 10
+        timeout: 300
+      when: item.changed
+      loop: "{{ instace_result.results }}"
+- name: Install Clickhouse
+  tags: clickhouse_install
+  become: true
+  hosts: clickhouse
+  remote_user: yc-user
+  roles:
+    - timych.yandex_cloud_cvl.clickhouse
+  vars_files:
+    - clickhouse.yml
+- name: Configure Clickhouse
+  tags: clickhouse_config
+  hosts: clickhouse
+  remote_user: yc-user
+  become: true
+  vars_files:
+    - clickhouse.yml
+  tasks:
+    - name: Configure clickhouse | Create table for syslog
+      ansible.builtin.command: "clickhouse-client  --host 127.0.0.1 -q '{{ clickhouse_syslog_table_query }}'"
+      register: create_db
+      failed_when: create_db.rc != 0 and create_db.rc != 57
+      changed_when: create_db.rc == 0
+- name: Install Vector
+  tags: vector_install
+  hosts: vector
+  remote_user: yc-user
+  vars:
+    clickhouse_ipaddress: "{{ hostvars['clickhouse-01'].ansible_host }}"
+  roles:
+    - timych.yandex_cloud_cvl.vector_role
+- name: Install lighthouse
+  tags: lighthouse_install
+  become: true
+  remote_user: yc-user
+  hosts: lighthouse
+  roles:
+    - timych.yandex_cloud_cvl.lighthouse_role
+- name: Output inventory
+  hosts: control
+  gather_facts: false
+  tasks:
+    - name: Run the Template
+      ansible.builtin.template:
+        src: HostsFile.j2
+        dest: gen_inv.yml
+        mode: '0644'
+        owner: timych
+        group: timych
+      when: "groups['in_memory'] is defined"
+    - name: Print IP Addresses
+      ansible.builtin.debug:
+        msg: "{{ hostvars[item].host_description }}: {{ hostvars[item].ansible_host }}"
+      when: "groups['in_memory'] is defined"
+      loop: "{{ groups['in_memory'] }}"

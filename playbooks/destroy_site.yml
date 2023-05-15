@@ -1,0 +1,31 @@
+- name: Destroy yc instances
+  hosts: all
+  vars:
+    instances:
+      - name: 'clickhouse-01'
+        description: 'clickhouse'
+        memory: 2
+        cores: 2
+        core_fraction: 20
+      - name: 'vector-01'
+        description: 'vector'
+        memory: 2
+        cores: 2
+        core_fraction: 20
+      - name: 'lighthouse-01'
+        description: 'lighthouse'
+        memory: 2
+        cores: 2
+        core_fraction: 20
+  tasks:
+    - name: Destroy created instances
+      timych.yandex_cloud_cvl.yc:
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        ssh_key: "~/.ssh/id_rsa.pub"
+        state: absent
+        update: true
+        zone: ru-central1-a
+        hostname: "{{ item.name }}"
+      register: testout
+      loop: "{{ instances }}"

@@ -134,16 +134,51 @@ author:
 
 EXAMPLES = r'''
 # Create compute instance
-- name: Write some content
-  timych.yandex_cloud_cvl.my_own_module:
-    path: "/home/user/myfile.txt"
-    content: "my new content"
-# Write some content into remote file even if file exists and have different content
-- name: Write some content
-  timych.yandex_cloud_cvl.my_own_module:
-    path: "/home/user/myfile.txt"
-    content: "my new content"
-    force: true
+- name:
+    timych.yandex_cloud_cvl.yc:
+        name: "compute-instance-1"
+        description: "compute-instance-1"
+        ssh_key: "~/.ssh/id_rsa.pub"
+        state: present
+        update: false
+        zone: ru-central1-a
+        hostname: "compute-instance-1"
+        memory: 4
+        cores: 2
+        core_fraction: 20
+        public_ip: true
+        preemptible: true
+        boot_disk:
+            image_family: centos-stream-8
+            image_folder_id: standard-images
+            size: 10
+            type: network-hdd
+
+# Destroy compute instance
+- name: Destroy created instances
+    timych.yandex_cloud_cvl.yc:
+        name: "compute-instance-1"
+        state: absent
+        zone: ru-central1-a
+
+# Destroy compute instance
+- name: Destroy created instances
+    timych.yandex_cloud_cvl.yc:
+        name: "compute-instance-1"
+        state: absent
+        zone: ru-central1-a
+
+# Update compute instance
+- name: Update instance
+    timych.yandex_cloud_cvl.yc:
+        name: "compute-instance-1"
+        description: "compute-instance-1"
+        state: present
+        update: true
+        zone: ru-central1-a
+        memory: 2
+        cores: 2
+        core_fraction: 20
 '''
 
 RETURN = r'''
@@ -158,11 +193,11 @@ vm:
     type: json
     returned: success when instance was created
     sample: true
---target_content:
-    description: Content shoud be written to target
+yc_command_result:
+    description: Result of yc command
     type: str
     returned: always
-    sample: 'test content'
+    sample: all output from yc command
 '''
 
 import json
@@ -197,9 +232,9 @@ def run_module():
         core_fraction=dict(type='int', required=False, default="20", choices=[5,20,50,100]),
         public_ip=dict(type='bool', required=False, default=True),
         preemptible=dict(type='bool', required=False, default=False),
-        boot_disk=dict(type='dict', options=dict(
-            image_family=dict(type='str', required=False),
-            image_folder_id=dict(type='str', required=False),
+        boot_disk=dict(type='dict', required=False, default={}, options=dict(
+            image_family=dict(type='str', required=False, default="centos-stream-8"),
+            image_folder_id=dict(type='str', required=False, default="standard-images"),
             size=dict(type='int', required=False, default="10"),
             type=dict(type='str', required=False, default="network-hdd"),
         )),
@@ -287,6 +322,7 @@ def run_module():
             # result['yc_joined'] = yc_joined
             # result['create'] = yc_result[1]
             # result['message'] = yc_result
+            result['yc_command_result'] = yc_result
             result['vm'] = json.loads(yc_result[1])
             result['changed'] = True
         else:
@@ -310,7 +346,7 @@ def run_module():
                                                 str(yc_params['core-fraction']),
                                                 "--format", "json"],
                                                check_rc=True)
-                result['yc_update'] = yc_update
+                result['yc_command_result'] = yc_update
                 yc_start = module.run_command(["yc",
                                                "compute",
                                                "instance",
@@ -329,7 +365,7 @@ def run_module():
     if (module.params['state'] == 'absent') or (module.params['state'] == 'terminated'):
         if (yc_compute_instance_get[0] == 0):
             yc_delete = module.run_command(["yc", "compute", "instance", "delete", yc_params['name'], "--format", "json"], check_rc=True)
-            result['yc_delete'] = yc_delete
+            result['yc_command_result'] = yc_delete
             result['changed'] = True
         else:
             module.fail_json(msg=('No VM exists with name: ' + yc_params['name']), **result)
@@ -337,7 +373,7 @@ def run_module():
     if (module.params['state'] == 'stopped'):
         if (yc_compute_instance_get[0] == 0) and (yc_compute_instance_info['status'] == "RUNNING"):
             yc_stop = module.run_command(["yc", "compute", "instance", "stop", yc_params['name'], "--format", "json"], check_rc=True)
-            result['yc_stop'] = yc_stop
+            result['yc_command_result'] = yc_stop
             result['changed'] = True
         else:
             module.fail_json(msg=('No VM exists with name: ' + yc_params['name']), **result)
@@ -345,15 +381,15 @@ def run_module():
     if (module.params['state'] == 'started'):
         if (yc_compute_instance_get[0] == 0) and (yc_compute_instance_info['status'] == "STOPPED") :
             yc_start = module.run_command(["yc", "compute", "instance", "start", yc_params['name'], "--format", "json"], check_rc=True)
-            result['yc_start'] = yc_start
+            result['yc_command_result'] = yc_start
             result['changed'] = True
         else:
             module.fail_json(msg=('No VM exists with state STOPPED and name: ' + yc_params['name']), **result)
 
-    if (module.params['state'] == 'restarted'):
+    if (module.params['state'] == 'restarted') or (module.params['state'] == 'rebooted'):
         if (yc_compute_instance_get[0] == 0) and (yc_compute_instance_info['status'] == "RUNNING"):
             yc_restart = module.run_command(["yc", "compute", "instance", "restart", yc_params['name'], "--format", "json"], check_rc=True)
-            result['yc_restart'] = yc_restart
+            result['yc_command_result'] = yc_restart
             result['changed'] = True
         else:
             module.fail_json(msg=('No VM exists in state RUNNING with name: ' + yc_params['name']), **result)
