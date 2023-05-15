@@ -3,7 +3,7 @@ Documentation for the collection.
 
 Modules:
 - Content
-- Yandex command line tool module
+- Yandex command line tool
 
 Roles:
 - Lighthouse
@@ -28,48 +28,18 @@ Roles:
 
 This repo hosts the `timych.yandex_cloud_cvl` Ansible Collection.
 
-The collection includes a variety of Ansible content to help automate the management of resources in Zabbix.
+The collection includes modules and roles to deploy Clickhouse-Vector-Lighthouse stack.
 
 ## Included content
 
 Click on the name of a plugin or module to view that content's documentation:
 
-  - **Inventory Sources**:
-    - [zabbix](scripts/inventory/zabbix.py) - Zabbix Inventory Script
-    - [zabbix_inventory](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_inventory_inventory.html) - Zabbix Ansible Inventory Plugin
   - **Modules**:
-    - [zabbix_action](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_action_module.html)
-    - [zabbix_authentication](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_authentication_module.html)
-    - [zabbix_autoregister](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_autoregister_module.html)
-    - [zabbix_discovery_rule](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_discovery_rule_module.html)
-    - [zabbix_globalmacro](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_globalmacro_module.html)
-    - [zabbix_group_info](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_group_info_module.html)
-    - [zabbix_group](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_group_module.html)
-    - [zabbix_host_events_info](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_host_events_info_module.html)
-    - [zabbix_host_info](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_host_info_module.html)
-    - [zabbix_host](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_host_module.html)
-    - [zabbix_hostmacro](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_hostmacro_module.html)
-    - [zabbix_housekeeping](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_housekeeping_module.html)
-    - [zabbix_maintenance](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_maintenance_module.html)
-    - [zabbix_map](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_map_module.html)
-    - [zabbix_mediatype](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_mediatype_module.html)
-    - [zabbix_proxy_info](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_proxy_info_module.html)
-    - [zabbix_proxy](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_proxy_module.html)
-    - [zabbix_screen](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_screen_module.html)
-    - [zabbix_script](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_script_module.html)
-    - [zabbix_service](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_service_module.html)
-    - [zabbix_template_info](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_template_info_module.html)
-    - [zabbix_template](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_template_module.html)
-    - [zabbix_user_info](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_user_info_module.html)
-    - [zabbix_user](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_user_module.html)
-    - [zabbix_usergroup](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_usergroup_module.html)
-    - [zabbix_valuemap](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_valuemap_module.html)
+    - [Content](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_action_module.html)
+    - [yc](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_authentication_module.html)
   - **Roles**:
-    - [zabbix_agent](docs/ZABBIX_AGENT_ROLE.md)
-    - [zabbix_javagateway](docs/ZABBIX_JAVAGATEWAY_ROLE.md)
-    - [zabbix_proxy](docs/ZABBIX_PROXY_ROLE.md)
-    - [zabbix_server](docs/ZABBIX_SERVER_ROLE.md)
-    - [zabbix_web](docs/ZABBIX_WEB_ROLE.md)
+    - [Lighthouse](docs/ZABBIX_AGENT_ROLE.md)
+    - [Vector](docs/ZABBIX_JAVAGATEWAY_ROLE.md)
 
 ## Installation
 
@@ -119,8 +89,6 @@ collections:
 Make sure to read [UPGRADE](docs/UPGRADE.md) document before installing newer version of this collection.
 
 ## Usage
-
-*Please note that these are not working examples. For documentation on how to use content included in this collection, refer to the links in the [Included content](#included-content) section.*
 
 To use a module or role from this collection, reference them with their Fully Qualified Collection Namespace (FQCN) like so:
 
