@@ -35,58 +35,25 @@ The collection includes modules and roles to deploy Clickhouse-Vector-Lighthouse
 Click on the name of a plugin or module to view that content's documentation:
 
   - **Modules**:
-    - [Content](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_action_module.html)
-    - [yc](https://docs.ansible.com/ansible/latest/collections/community/zabbix/zabbix_authentication_module.html)
+    - [Content]
+        - Module for writing content to file
+    - [yc]
+        - Module for working with Yandex cloud compute instances
   - **Roles**:
-    - [Lighthouse](docs/ZABBIX_AGENT_ROLE.md)
-    - [Vector](docs/ZABBIX_JAVAGATEWAY_ROLE.md)
+    - [lighthouse_role]
+        - Simple lighthouse deployment
+    - [vector_role]
+        - Simple Vector deployment
 
 ## Installation
 
+
+You can install collection using commands:
+ansible-galaxy collection install git+https://github.com/Timych84/ansible-collection-cvl.git
+ansible-galaxy collection install git@github.com:Timych84/ansible-collection-cvl.git
+
 ### Requirements
-
-Each component in this collection requires additional dependencies. Review components you are interested in by visiting links present in the [Included content](#included-content) section.
-
-This is especially important for some of the Zabbix roles that require you to **install additional standalone roles** from Ansible Galaxy.
-
-For the majority of modules, however, you can get away with just:
-
-```bash
-pip install zabbix-api
-```
 #### Ansible 2.10 and higher
-
-With the release of Ansible 2.10, modules have been moved into collections.  With the exception of ansible.builtin modules, this means additonal collections must be installed in order to use modules such as seboolean (now ansible.posix.seboolean).  The following collections are now frequently required: `ansible.posix` and `community.general`.  Installing the collections:
-
-```bash
-ansible-galaxy collection install ansible.posix
-ansible-galaxy collection install community.general
-ansible-galaxy collection install ansible.netcommon
-```
-### Installing the Collection from Ansible Galaxy
-
-Before using the Zabbix collection, you need to install it with the Ansible Galaxy CLI:
-
-```bash
-ansible-galaxy collection install community.zabbix
-```
-
-You can also include it in a `requirements.yml` file along with other required collections and install them via `ansible-galaxy collection install -r requirements.yml`, using the format:
-
-```yaml
----
-collections:
-  - name: community.zabbix
-    version: 1.9.3
-  - name: ansible.posix
-    version: 1.3.0
-  - name: community.general
-    version: 3.7.0
-```
-
-### Upgrading collection
-
-Make sure to read [UPGRADE](docs/UPGRADE.md) document before installing newer version of this collection.
 
 ## Usage
 
