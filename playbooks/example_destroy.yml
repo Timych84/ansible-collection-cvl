@@ -1,0 +1,8 @@
+- name: Destroy created instance
+  hosts: control
+  tasks:
+    - name: Destroy created instance
+      timych.yandex_cloud_cvl.yc:
+        name: "compute-instance-1"
+        state: absent
+        zone: ru-central1-a

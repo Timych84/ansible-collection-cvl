@@ -1,0 +1,22 @@
+- name: Create instance
+  hosts: control
+  tasks:
+    - name: Create instance
+      timych.yandex_cloud_cvl.yc:
+        name: "compute-instance-1"
+        description: "compute-instance-1"
+        ssh_key: "~/.ssh/id_rsa.pub"
+        state: present
+        update: false
+        zone: ru-central1-a
+        hostname: "compute-instance-1"
+        memory: 4
+        cores: 2
+        core_fraction: 20
+        public_ip: true
+        preemptible: true
+        boot_disk:
+          image_family: centos-stream-8
+          image_folder_id: standard-images
+          size: 10
+          type: network-hdd

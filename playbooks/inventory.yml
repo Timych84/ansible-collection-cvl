@@ -1,0 +1,15 @@
+---
+control:
+  hosts:
+    # test-server-01:
+    #   ansible_host: 192.168.171.221
+    # test-server-02:
+    #   ansible_host: 192.168.171.222
+    test-server-03:
+      ansible_connection: local
+      ansible_host: 127.0.0.1
+clickhouse:
+
+vector:
+
+lighthouse:

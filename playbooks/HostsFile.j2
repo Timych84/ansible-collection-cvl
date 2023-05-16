@@ -1,0 +1,15 @@
+---
+{% for group in groups %}
+{% if groups[group] and group != 'all' and group != 'in_memory' and group != 'ungrouped'%}
+{{ group }}:
+  hosts:
+{% for host in groups[group] %}
+    {{ hostvars[host].inventory_hostname }}:
+      ansible_host: {{ hostvars[host].ansible_host }}
+    {% if hostvars[host].ansible_connection is defined %}
+  ansible_connection: {{ hostvars[host].ansible_connection }}
+    {% endif %}
+{% endfor %}
+
+{% endif %}
+{% endfor %}

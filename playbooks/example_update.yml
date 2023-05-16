@@ -1,0 +1,13 @@
+- name: Update instance
+  hosts: control
+  tasks:
+    - name: Update instance
+      timych.yandex_cloud_cvl.yc:
+        name: "compute-instance-1"
+        description: "compute-instance-1"
+        state: present
+        update: true
+        zone: ru-central1-a
+        memory: 2
+        cores: 2
+        core_fraction: 20

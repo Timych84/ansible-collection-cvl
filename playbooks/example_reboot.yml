@@ -1,0 +1,8 @@
+- name: Reboot instance
+  hosts: control
+  tasks:
+    - name: Reboot instance
+      timych.yandex_cloud_cvl.yc:
+        name: "compute-instance-1"
+        state: rebooted
+        zone: ru-central1-a
