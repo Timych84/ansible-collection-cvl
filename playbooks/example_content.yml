@@ -1,0 +1,10 @@
+---
+- name: Write content
+  tags: write_content
+  hosts: all
+  roles:
+    - timych.yandex_cloud_cvl.content
+  vars:
+    - path: "~/testfile.txt"
+    - content: "test\ncontent2"
+    - force: false

@@ -73,6 +73,9 @@ To use module for creating file with specified content use "Content" role, examp
 To deploy Clickhouse-Vector-Lighthouse stack use these files in playbook folder:
 - create_site.yml
     - Playbook that creates 3 compute instances on Yandex Cloud and installs Clickhouse-Vector-Lighthouse stack on them
+        - clickhouse-01 - Clickhouse instance with sample logs database and syslogd table in it for recieving syslogd entries from Vector
+        - vector-01 - Instance with Vector, sending syslogd entries to Clickhouse
+        - lighthouse-01 - Instance with Lighthouse to visualise Clickhouse queries
     - After execution it creates gen_inv.yml inventory file containing all created hosts
 - destroy_site.yml
     - Playbook that destroys compute instances
