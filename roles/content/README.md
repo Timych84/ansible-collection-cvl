@@ -17,6 +17,10 @@ F: You have to specify file content.
 content: "test content"
 ```
 
+F: You can choose to overwrite content.
+```yaml
+force: true
+```
 
 Example Playbook
 ----------------
