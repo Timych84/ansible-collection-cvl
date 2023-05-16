@@ -1,5 +1,5 @@
 Documentation for the collection.
-# Clickhouse - Vector - Lighthouse Ansible collection for Yandex Cloud using yc command line tool
+# Clickhouse - Vector - Lighthouse Stack Ansible collection for Yandex Cloud. Deploy using yc command line tool
 
 **Table of Contents**
 
